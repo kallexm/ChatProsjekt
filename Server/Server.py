@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 import socketserver
+from ServerMessageParser import ServerMessageParser 
 
 """
 Variables and functions that must be used by all the ClientHandler objects
 must be written here (e.g. a dictionary for connected clients)
 """
+
+connections_logged_in = {}
+conversation_history = []
+
 
 class ClientHandler(socketserver.BaseRequestHandler):
     """
@@ -37,6 +42,7 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     No alterations are necessary
     """
     allow_reuse_address = True
+	isLoggedIn = False #La til denne da den sto i design men tenkte ikke mer over bruken når jeg skrev den
 
 if __name__ == "__main__":
     """
