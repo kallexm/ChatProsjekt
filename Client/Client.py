@@ -18,22 +18,28 @@ class Client:
         
         # TODO: Finish init process with necessary code
         self.run()
+        msgRec = MessageReceiver(self, self.connection)
 
     def run(self):
         # Initiate the connection to the server
         self.connection.connect((self.host, self.server_port))
-        
+		
+		
     def disconnect(self):
         # TODO: Handle disconnection
-        pass
+        self.connection.close()
 
     def receive_message(self, message):
         # TODO: Handle incoming message
-        pass
+        DisplayMsgToUser(message)
+        
 
     def send_payload(self, data):
         # TODO: Handle sending of a payload
-        pass
+        sendMsg = json.dumps(data)
+        rawSendMsg = sendMsg.encode()
+        self.connection.send(rawSendMsg)
+        
         
     # More methods may be needed!
 

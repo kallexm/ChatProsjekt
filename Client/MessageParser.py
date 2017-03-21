@@ -21,6 +21,8 @@ class MessageParser():
 
     def parse_error(self, payload):
         print("Parse_error")
+        return payload
+		
 
     def parse_info(self, payload):
         print("parse_info")

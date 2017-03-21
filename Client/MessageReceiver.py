@@ -19,5 +19,10 @@ class MessageReceiver(Thread):
         # TODO: Finish initialization of MessageReceiver
 
     def run(self):
+        
         # TODO: Make MessageReceiver receive and handle payloads
-        pass
+        while True:
+            rawRecvMessage = connection.recv(1024)
+            recvMessage = rawRecvMessage.decode()
+            payload = MessageParser.parse(recvMessage)
+            receive_message(payload)
