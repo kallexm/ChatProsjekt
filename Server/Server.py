@@ -29,6 +29,7 @@ class ClientHandler(socketserver.BaseRequestHandler):
 
         # Loop that listens for messages from the client
         while True:
+            isLoggedIn = False #La til denne da den sto i design men tenkte ikke mer over bruken når jeg skrev den
             received_string = self.connection.recv(4096)
             
             # TODO: Add handling of received payload from client
@@ -42,7 +43,8 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     No alterations are necessary
     """
     allow_reuse_address = True
-	isLoggedIn = False #La til denne da den sto i design men tenkte ikke mer over bruken når jeg skrev den
+
+
 
 if __name__ == "__main__":
     """

@@ -13,21 +13,31 @@ class ServerMessageParser():
         }
 
 	def parse(self, payload):
-	
-	
-	
-	def parse_login(self, payload):
-	
-	
-	def parse_logout(self, payload):
-	
-	
-	def parse_msg(self, payload):
-	
-	
-	def parse_names(self, payload):
-	
-	
-	def parse_help(self, payload):
+		print("Parse")
+		# Change some of this implementation
+		payload = json.loads(payload) # decode the JSON object
 
-	
+        if payload['response'] in self.possible_responses:
+            return self.possible_responses[payload['response']](payload)
+        else:
+            # Response not valid
+		
+	def parse_login(self, payload):
+		print("parse_login")
+		# Add
+		
+	def parse_logout(self, payload):
+		print("parse_logout")
+		# Add
+		
+	def parse_msg(self, payload):
+		print("parse_msg")
+		# Add
+		
+	def parse_names(self, payload):
+		print("parse_names")
+		# Add
+		
+	def parse_help(self, payload):
+		print("parse_help")
+		# Add

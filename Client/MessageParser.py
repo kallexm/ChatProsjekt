@@ -1,4 +1,4 @@
-
+import json
 
 class MessageParser():
     def __init__(self):
@@ -8,27 +8,26 @@ class MessageParser():
             'info': self.parse_info,
 			'message': self.parse_message,
 			'history': self.parse_history,
-	    # More key:values pairs are needed	
         }
 
     def parse(self, payload):
-        payload = # decode the JSON object
+        payload = json.loads(payload) # decode the JSON object
 
         if payload['response'] in self.possible_responses:
             return self.possible_responses[payload['response']](payload)
         else:
             # Response not valid
+            print("parse")
 
     def parse_error(self, payload):
-		
-	
+        print("Parse_error")
+
     def parse_info(self, payload):
-		
-	
-	def parse_message(self, payload):
-		
-	
-	def parse_history(self, payload):
-		
-    
-    # Include more methods for handling the different responses... 
+        print("parse_info")
+
+    def parse_message(self, payload):
+        print("parse_message")
+
+    def parse_history(self, payload):
+        print("parse_history")
+        
