@@ -14,13 +14,16 @@ class MessageReceiver(Thread):
         """
 
         # Flag to run thread as a deamon
+        Thread.__init__(self)
         self.daemon = True
 
         # TODO: Finish initialization of MessageReceiver
+        
 
     def run(self):
         
         # TODO: Make MessageReceiver receive and handle payloads
+        print("Start messageReceiver")
         while True:
             rawRecvMessage = connection.recv(1024)
             recvMessage = rawRecvMessage.decode()

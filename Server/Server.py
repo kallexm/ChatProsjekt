@@ -29,43 +29,47 @@ class ClientHandler(socketserver.BaseRequestHandler):
         self.connection = self.request
         
         # Loop that listens for messages from the client
+
+        parser = ServerMessageParser()
+        print("Connection established")
         while True:
             
             received_string = self.connection.recv(4096)
             
             # TODO: Add handling of received payload from client
-            msgFromClient = received_string.decode()
-            parsedMsg = ServerMessageParser.parse()
+            if received_string:
+                msgFromClient = received_string.decode()
+                parsedMsg = parser.parse(msgFromClient)
             
-            if parsedMsg['request'] == 'login':
-                self.handleLoginRequest()
+                if parsedMsg['request'] == 'login':
+                    self.handleLoginRequest()
                 
-            elif parsedMsg['request'] == 'logout':
-                self.handleLogoutRequest()
+                elif parsedMsg['request'] == 'logout':
+                    self.handleLogoutRequest()
             
-            elif parsedMsg['request'] == 'msg':
-                self.handleSendMsgRequest()
+                elif parsedMsg['request'] == 'msg':
+                    self.handleSendMsgRequest()
             
-            elif parsedMsg['request'] == 'names':
-                self.handleNamelistRequest()
+                elif parsedMsg['request'] == 'names':
+                    self.handleNamelistRequest()
             
-            elif parsedMsg['request'] == 'help':
-                self.handleHelpRequest()
+                elif parsedMsg['request'] == 'help':
+                    self.handleHelpRequest()
             
     def handleLoginRequest(self, parsedMsg):
-        
+        connections_logged_in
     
     def handleLogoutRequest(self, parsedMsg):
-        
+        pass
     
     def handleHelpRequest(self, parsedMsg):
-        
+        pass
     
     def handleNamelistRequest(self, parsedMsg):
-        
+        pass
     
     def handleSendMsgRequest(self, parsedMsg):
-        
+        pass
     
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):

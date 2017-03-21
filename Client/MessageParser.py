@@ -6,8 +6,8 @@ class MessageParser():
         self.possible_responses = {
             'error': self.parse_error,
             'info': self.parse_info,
-			'message': self.parse_message,
-			'history': self.parse_history,
+            'message': self.parse_message,
+            'history': self.parse_history,
         }
 
     def parse(self, payload):
@@ -22,7 +22,7 @@ class MessageParser():
     def parse_error(self, payload):
         print("Parse_error")
         return payload
-		
+
 
     def parse_info(self, payload):
         print("parse_info")

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import json
 
 class ServerMessageParser():
     def __init__(self):
@@ -39,7 +40,7 @@ class ServerMessageParser():
     def parse_names(self, payload):
         print("parse_names")
         return payload
-		
+        
     def parse_help(self, payload):
         print("parse_help")
         return payload
