@@ -20,7 +20,7 @@ class Client:
         self.host = host
         self.server_port = server_port
         self.chat = None
-        # TODO: Finish init process with necessary code
+        
         self.run()
         msgRecv = MessageReceiver(self, self.connection)
         msgRecv.start()
@@ -29,15 +29,12 @@ class Client:
     def run(self):
         # Initiate the connection to the server
         self.connection.connect((self.host, self.server_port))
-        #self.chat.run()
 
 
     def disconnect(self):
-        # TODO: Handle disconnection
         self.connection.close()
 
     def receive_message(self, message):
-        # TODO: Handle incoming message
         chat.DisplayMsgToUser(message)
         
 
@@ -49,7 +46,6 @@ class Client:
         
     def set_Chat(self, chat):
         self.Chat = chat
-    # More methods may be needed!
 
 
 if __name__ == '__main__':
@@ -64,7 +60,6 @@ if __name__ == '__main__':
     chat = Chat(client)
     client.set_Chat(chat)
     chat.start()
-    print("hade")
     while True:
         pass
     

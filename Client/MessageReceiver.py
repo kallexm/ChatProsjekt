@@ -27,10 +27,11 @@ class MessageReceiver(Thread):
         # TODO: Make MessageReceiver receive and handle payloads
         print("Start messageReceiver")
         while True:
-            rawRecvMessage = self.connection.recv(1024)
+            rawRecvMessage = self.connection.recv(4096)
             if rawRecvMessage:
                 recvMessage = rawRecvMessage.decode()
                 payload = parser.parse(recvMessage)
+
                 if payload['response'] == 'error':
                     self.errorHandler(payload)
                 elif payload['response'] == 'info':
@@ -40,6 +41,8 @@ class MessageReceiver(Thread):
                 elif payload['response'] == 'message':
                     self.messageHandler(payload) 
 
+
+
     def errorHandler(self, payload):
         self.client.receive_message(payload['content'])
 
@@ -47,7 +50,11 @@ class MessageReceiver(Thread):
         self.client.receive_message(payload['content'])
 
     def historyHandler(self, payload):
-        self.client.receive_message(payload['content'])
+        msgStr = "Login Successful\nHistory log:\n"
+        for message in payload['content']:
+            msgStr = msgStr+message['sender']+" ["+message['timestamp']+"]: "+message['content']+"\n"
+        self.client.receive_message(msgStr)
 
     def messageHandler(self, payload):
-        self.client.receive_message(payload['content'])
+        msgStr = payload['sender']+" ["+payload['timestamp']+"]: "+payload['content']
+        self.client.receive_message(msgStr)

@@ -12,7 +12,6 @@ class MessageParser():
 
     def parse(self, payload):
         payload = json.loads(payload) # decode the JSON object
-
         if payload['response'] in self.possible_responses:
             return self.possible_responses[payload['response']](payload)
         else:
@@ -20,19 +19,15 @@ class MessageParser():
             print("No match in possible responses")
 
     def parse_error(self, payload):
-        print("Parse_error")
         return payload
 
 
     def parse_info(self, payload):
-        print("parse_info")
         return payload
 
     def parse_message(self, payload):
-        print("parse_message")
         return payload
 
     def parse_history(self, payload):
-        print("parse_history")
         return payload
         

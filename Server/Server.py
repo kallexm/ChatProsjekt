@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 import socketserver
+import socket
 import time
 import json
+import errno
 from ServerMessageParser import ServerMessageParser 
 
 """
@@ -49,40 +51,46 @@ class ClientHandler(socketserver.BaseRequestHandler):
                     name, isLoggedIn = self.handleLogoutRequest(name, isLoggedIn)
             
                 elif parsedMsg['request'] == 'msg':
-                    self.handleSendMsgRequest(parsedMsg['content'])
+                    self.handleSendMsgRequest(parsedMsg['content'], name, isLoggedIn)
             
                 elif parsedMsg['request'] == 'names':
-                    self.handleNamelistRequest()
+                    self.handleNamelistRequest(name, isLoggedIn)
             
                 elif parsedMsg['request'] == 'help':
                     self.handleHelpRequest()
-            
+         
+
+
     def handleLoginRequest(self, msgContent, name, isLoggedIn):
         if not str.isalnum(msgContent):
-            print("not isalnum")
-            data = createresponseStruct("", 'error', 'Error: Username can only contain alphanumericals')
+            data = createResponseStruct("", 'error', 'Error: Username can only contain alphanumericals')
         elif msgContent in connections_logged_in.keys():
-            data = createresponseStruct("", 'error', 'Error: Usernam alrady in use')
-            print("Username alrady in use")
+            data = createResponseStruct("", 'error', 'Error: Username already in use')
         elif isLoggedIn:
-            data = createresponseStruct("", 'error', 'Error: Allrady loged in as: ' + name)
-            print("Username alrady logged in")
+            data = createResponseStruct("", 'error', 'Error: Already loged in as: ' + name)
         else:
-            connections_logged_in[msgContent] = self
-            data = createresponseStruct("", 'info', 'login as: ' + msgContent + ' successful')
+            connections_logged_in[msgContent] = self.connection
+            #data = createResponseStruct("", 'info', 'login as: ' + msgContent + ' successful')
             isLoggedIn = True
             name = msgContent
+            sendHistoryListMessage(name)
+            return name, isLoggedIn
+
         sendMsg = json.dumps(data)
         rawSendMsg = sendMsg.encode()
         self.connection.send(rawSendMsg)
+        
         return name, isLoggedIn
     
+
+
+
     def handleLogoutRequest(self, name, isLoggedIn):
         if not isLoggedIn:
-            data = createresponseStruct("", 'error', 'Error must be logged inn')
+            data = createResponseStruct("", 'error', 'Error must be logged inn')
         else:
             del connections_logged_in[name]
-            data = createresponseStruct("", 'info', 'Log out successful')
+            data = createResponseStruct("", 'info', 'Log out successful')
             isLoggedIn = False
             name = ""
         sendMsg = json.dumps(data)
@@ -90,15 +98,68 @@ class ClientHandler(socketserver.BaseRequestHandler):
         self.connection.send(rawSendMsg)
         return name, isLoggedIn
 
+
+
+
     def handleHelpRequest(self):
-        pass
+        helpMessage = "\n========================[help]========================\nlogin [username]\n - Use command to log on to the chat server\n\nlogout\n - Use command to logout\n\nhelp\n - Use command to show this message\n\nlist\n - Use command to show names of all the logged on users\n\nIf you are logged in you can write messages by\ntyping you message followed by ENTER.\n========================[help]========================\n"
+        data = createResponseStruct("", 'info', helpMessage)
+        sendMsg = json.dumps(data)
+        rawSendMsg = sendMsg.encode()
+        self.connection.send(rawSendMsg)
     
-    def handleNamelistRequest(self):
-        pass
+
+
+
+    def handleNamelistRequest(self, name, isLoggedIn):
+        if isLoggedIn:
+            userList = "\n=======================[users]========================\n"
+            for user in connections_logged_in:
+                userList = userList+user+"\n"
+            userList = userList+"=======================[users]========================\n\n"
+            data = createResponseStruct("", 'info', userList)
+            sendMsg = json.dumps(data)
+            rawSendMsg = sendMsg.encode()
+            self.connection.send(rawSendMsg)
+        else:
+            data = createResponseStruct("", 'error', 'Error: must be logged in to request list of users')
+            sendMsg = json.dumps(data)
+            rawSendMsg = sendMsg.encode()
+            self.connection.send(rawSendMsg)
     
-    def handleSendMsgRequest(self, msgContent):
-        pass
+
+
+
+    def handleSendMsgRequest(self, msgContent, name, isLoggedIn):
+        if isLoggedIn:
+            data = createResponseStruct(name, 'message', msgContent)
+            conversation_history.append(data)
+
+            brokenConn = {}
+            for user in connections_logged_in:
+                sendMsg = json.dumps(data)
+                rawSendMsg = sendMsg.encode()
+                try:
+                    connections_logged_in[user].send(rawSendMsg)
+                except socket.error as e:
+                    print("Error: connection broke to "+user+", closing connection")
+                    brokenConn[user] = connections_logged_in[user]
+                except IOError as e:
+                    if e.errno == errno.EPIPE:
+                        print("EPIPE error")
+                    else:
+                        print("unknown error")
+            for user in brokenConn:
+                del connections_logged_in[user]
+
+        else:
+            data = createResponseStruct("", 'error', 'Error: must be logged in to send message')
+            sendMsg = json.dumps(data)
+            rawSendMsg = sendMsg.encode()
+            self.connection.send(rawSendMsg)
     
+
+
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     """
@@ -111,11 +172,23 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
 
 
 
-def createresponseStruct(sender, response, content):
+
+def createResponseStruct(sender, response, content):
     curentTime = time.strftime("%X")
     if response == 'error' or response == 'info' or response == 'history':
         sender = 'Server'
     return {'timestamp': curentTime,'sender': sender, 'response': response, 'content': content}
+
+
+
+
+def sendHistoryListMessage(to):
+    data = createResponseStruct("", "history", conversation_history)
+    sendMsg = json.dumps(data)
+    rawSendMsg = sendMsg.encode()
+    connections_logged_in[to].send(rawSendMsg)
+
+
 
 
 if __name__ == "__main__":
@@ -131,3 +204,4 @@ if __name__ == "__main__":
     # Set up and initiate the TCP server
     server = ThreadedTCPServer((HOST, PORT), ClientHandler)
     server.serve_forever()
+
