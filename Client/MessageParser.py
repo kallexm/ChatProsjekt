@@ -17,7 +17,7 @@ class MessageParser():
             return self.possible_responses[payload['response']](payload)
         else:
             # Response not valid
-            print("parse")
+            print("No match in possible responses")
 
     def parse_error(self, payload):
         print("Parse_error")
@@ -26,10 +26,13 @@ class MessageParser():
 
     def parse_info(self, payload):
         print("parse_info")
+        return payload
 
     def parse_message(self, payload):
         print("parse_message")
+        return payload
 
     def parse_history(self, payload):
         print("parse_history")
+        return payload
         

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from threading import Thread
+from MessageParser import MessageParser
 
 class MessageReceiver(Thread):
     """
@@ -7,7 +8,6 @@ class MessageReceiver(Thread):
     is necessary to make the MessageReceiver start a new thread, and it allows
     the chat client to both send and receive messages at the same time
     """
-
     def __init__(self, client, connection):
         """
         This method is executed when creating a new MessageReceiver object
@@ -16,16 +16,38 @@ class MessageReceiver(Thread):
         # Flag to run thread as a deamon
         Thread.__init__(self)
         self.daemon = True
+        self.client = client
+        self.connection = connection
 
         # TODO: Finish initialization of MessageReceiver
         
 
     def run(self):
-        
+        parser = MessageParser()
         # TODO: Make MessageReceiver receive and handle payloads
         print("Start messageReceiver")
         while True:
-            rawRecvMessage = connection.recv(1024)
-            recvMessage = rawRecvMessage.decode()
-            payload = MessageParser.parse(recvMessage)
-            receive_message(payload)
+            rawRecvMessage = self.connection.recv(1024)
+            if rawRecvMessage:
+                recvMessage = rawRecvMessage.decode()
+                payload = parser.parse(recvMessage)
+                if payload['response'] == 'error':
+                    self.errorHandler(payload)
+                elif payload['response'] == 'info':
+                    self.infoHandler(payload)
+                elif payload['response'] == 'history':
+                    self.historyHandler(payload)
+                elif payload['response'] == 'message':
+                    self.messageHandler(payload) 
+
+    def errorHandler(self, payload):
+        self.client.receive_message(payload['content'])
+
+    def infoHandler(self, payload):
+        self.client.receive_message(payload['content'])
+
+    def historyHandler(self, payload):
+        self.client.receive_message(payload['content'])
+
+    def messageHandler(self, payload):
+        self.client.receive_message(payload['content'])

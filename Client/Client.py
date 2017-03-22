@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import socket
+import json
 from MessageReceiver import MessageReceiver
 from MessageParser import MessageParser
 from Chat import Chat
@@ -8,7 +9,6 @@ class Client:
     """
     This is the chat client class
     """
-    chat = Chat()
 
     def __init__(self, host, server_port):
         """
@@ -19,15 +19,17 @@ class Client:
         self.connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.host = host
         self.server_port = server_port
+        self.chat = None
         # TODO: Finish init process with necessary code
         self.run()
         msgRecv = MessageReceiver(self, self.connection)
-        
+        msgRecv.start()
+
 
     def run(self):
         # Initiate the connection to the server
         self.connection.connect((self.host, self.server_port))
-        self.chat.run()
+        #self.chat.run()
 
 
     def disconnect(self):
@@ -45,7 +47,8 @@ class Client:
         rawSendMsg = sendMsg.encode()
         self.connection.send(rawSendMsg)
         
-        
+    def set_Chat(self, chat):
+        self.Chat = chat
     # More methods may be needed!
 
 
@@ -56,4 +59,12 @@ if __name__ == '__main__':
 
     No alterations are necessary
     """
+
     client = Client('localhost', 9998)
+    chat = Chat(client)
+    client.set_Chat(chat)
+    chat.start()
+    print("hade")
+    while True:
+        pass
+    

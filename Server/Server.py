@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import socketserver
+import time
+import json
 from ServerMessageParser import ServerMessageParser 
 
 """
@@ -17,8 +19,7 @@ class ClientHandler(socketserver.BaseRequestHandler):
     server, a new ClientHandler object will be created. This class represents
     only connected clients, and not the server itself. If you want to write
     logic for the server, you must write it outside this class
-    """
-    isLoggedIn = False #La til denne da den sto i design men tenkte ikke mer over bruken når jeg skrev den
+    """ 
     
     def handle(self):
         """
@@ -27,7 +28,8 @@ class ClientHandler(socketserver.BaseRequestHandler):
         self.ip = self.client_address[0]
         self.port = self.client_address[1]
         self.connection = self.request
-        
+        isLoggedIn = False
+        name = ""    
         # Loop that listens for messages from the client
 
         parser = ServerMessageParser()
@@ -42,13 +44,12 @@ class ClientHandler(socketserver.BaseRequestHandler):
                 parsedMsg = parser.parse(msgFromClient)
             
                 if parsedMsg['request'] == 'login':
-                    self.handleLoginRequest()
-                
+                    name, isLoggedIn = self.handleLoginRequest(parsedMsg['content'], name, isLoggedIn)
                 elif parsedMsg['request'] == 'logout':
-                    self.handleLogoutRequest()
+                    name, isLoggedIn = self.handleLogoutRequest(name, isLoggedIn)
             
                 elif parsedMsg['request'] == 'msg':
-                    self.handleSendMsgRequest()
+                    self.handleSendMsgRequest(parsedMsg['content'])
             
                 elif parsedMsg['request'] == 'names':
                     self.handleNamelistRequest()
@@ -56,19 +57,46 @@ class ClientHandler(socketserver.BaseRequestHandler):
                 elif parsedMsg['request'] == 'help':
                     self.handleHelpRequest()
             
-    def handleLoginRequest(self, parsedMsg):
-        connections_logged_in
+    def handleLoginRequest(self, msgContent, name, isLoggedIn):
+        if not str.isalnum(msgContent):
+            print("not isalnum")
+            data = createresponseStruct("", 'error', 'Error: Username can only contain alphanumericals')
+        elif msgContent in connections_logged_in.keys():
+            data = createresponseStruct("", 'error', 'Error: Usernam alrady in use')
+            print("Username alrady in use")
+        elif isLoggedIn:
+            data = createresponseStruct("", 'error', 'Error: Allrady loged in as: ' + name)
+            print("Username alrady logged in")
+        else:
+            connections_logged_in[msgContent] = self
+            data = createresponseStruct("", 'info', 'login as: ' + msgContent + ' successful')
+            isLoggedIn = True
+            name = msgContent
+        sendMsg = json.dumps(data)
+        rawSendMsg = sendMsg.encode()
+        self.connection.send(rawSendMsg)
+        return name, isLoggedIn
     
-    def handleLogoutRequest(self, parsedMsg):
+    def handleLogoutRequest(self, name, isLoggedIn):
+        if not isLoggedIn:
+            data = createresponseStruct("", 'error', 'Error must be logged inn')
+        else:
+            del connections_logged_in[name]
+            data = createresponseStruct("", 'info', 'Log out successful')
+            isLoggedIn = False
+            name = ""
+        sendMsg = json.dumps(data)
+        rawSendMsg = sendMsg.encode()
+        self.connection.send(rawSendMsg)
+        return name, isLoggedIn
+
+    def handleHelpRequest(self):
         pass
     
-    def handleHelpRequest(self, parsedMsg):
+    def handleNamelistRequest(self):
         pass
     
-    def handleNamelistRequest(self, parsedMsg):
-        pass
-    
-    def handleSendMsgRequest(self, parsedMsg):
+    def handleSendMsgRequest(self, msgContent):
         pass
     
 
@@ -81,6 +109,13 @@ class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
     """
     allow_reuse_address = True
 
+
+
+def createresponseStruct(sender, response, content):
+    curentTime = time.strftime("%X")
+    if response == 'error' or response == 'info' or response == 'history':
+        sender = 'Server'
+    return {'timestamp': curentTime,'sender': sender, 'response': response, 'content': content}
 
 
 if __name__ == "__main__":
